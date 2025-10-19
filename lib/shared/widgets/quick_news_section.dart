@@ -111,7 +111,7 @@ class QuickNewsSection extends StatelessWidget {
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12.r),
               child: Image.network(
-                      'https://petapixel.com/assets/uploads/2024/01/The-Star-of-System-Sol-Rectangle-640x800.jpg',
+                      'https://lh3.googleusercontent.com/gps-cs-s/AC9h4noP8o5kEv7Si3cK9tS8CrPu4Rx543RtwKYiIpwXLzDPpfzRtbeT0_34VEYexXX2mnPzPedfs-C8PBJ1XPIsziy7nGhB8zk8Gx_p6BvmpHVm-pkjRvhz1jn1k7WgWZT0dtGbL7R5hA=s1360-w1360-h1020-rw',
                       fit: BoxFit.cover,
                       headers: const {
                         'User-Agent': 'Mozilla/5.0 (compatible; Flutter App)',
