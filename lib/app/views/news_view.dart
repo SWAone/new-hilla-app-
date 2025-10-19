@@ -104,11 +104,11 @@ class NewsView extends StatelessWidget {
 
   Widget _buildSearchAndFilter(NewsController controller) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 20.w),
+      margin: EdgeInsets.symmetric(horizontal: 0.w),
       child: Column(
         children: [
           // Search Bar
-          TextField(
+         Padding(padding: EdgeInsets.symmetric(horizontal: 20.w), child: TextField(
             onChanged: controller.searchNews,
             decoration: InputDecoration(
               hintText: 'البحث في الأخبار...',
@@ -136,14 +136,14 @@ class NewsView extends StatelessWidget {
                 vertical: 16.h,
               ),
             ),
-          ),
+          ) ,),
           
           SizedBox(height: 12.h),
           
           // Category Filter
           Obx(() => SingleChildScrollView(
             scrollDirection: Axis.horizontal,
-            child: Row(
+            child: Padding(padding: EdgeInsets.symmetric(horizontal: 20.w), child:  Row(
               children: [
                 _buildCategoryChip(
                   label: 'الكل',
@@ -163,7 +163,7 @@ class NewsView extends StatelessWidget {
                 ),
               ],
             ),
-          )),
+          )),),
         ],
       ),
     );

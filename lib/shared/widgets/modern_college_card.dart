@@ -24,7 +24,7 @@ class ModernCollegeCard extends StatelessWidget {
       delay: animationDelay,
       margin: EdgeInsets.only(bottom: 16.h),
       child: Container(
-        height: 120.h,
+
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20.r),
           gradient: LinearGradient(

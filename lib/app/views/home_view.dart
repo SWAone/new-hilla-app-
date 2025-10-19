@@ -5,7 +5,6 @@ import '../../app/controllers/college_controller.dart';
 import '../../app/controllers/news_controller.dart';
 import '../../app/controllers/events_controller.dart';
 import '../../core/theme/app_colors.dart';
-import '../../shared/widgets/college_card.dart';
 import '../../shared/widgets/modern_college_card.dart';
 import '../../shared/widgets/hero_slider.dart';
 import '../../shared/widgets/stats_section.dart';
@@ -85,6 +84,7 @@ class HomeView extends StatelessWidget {
         primaryColor: AppColors.primary,
         secondaryColor: AppColors.primaryLight,
         buttonText: 'استكشف الجامعة',
+        imageUrl: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&h=600&fit=crop&auto=format',
       ),
       SliderItem(
         title: 'التعليم الرقمي',
@@ -93,6 +93,7 @@ class HomeView extends StatelessWidget {
         primaryColor: AppColors.secondary,
         secondaryColor: AppColors.secondaryLight,
         buttonText: 'تعلم الآن',
+        imageUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=600&fit=crop&auto=format',
       ),
       SliderItem(
         title: 'البحث العلمي',
@@ -101,12 +102,12 @@ class HomeView extends StatelessWidget {
         primaryColor: AppColors.accent,
         secondaryColor: AppColors.accentLight,
         buttonText: 'اكتشف المزيد',
+        imageUrl: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=800&h=600&fit=crop&auto=format',
       ),
     ];
 
     return HeroSlider(
       items: sliderItems,
-      
     );
   }
 

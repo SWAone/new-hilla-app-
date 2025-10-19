@@ -24,6 +24,8 @@ class EventsData {
         currentAttendees: 150,
         tags: ['تكنولوجيا', 'ابتكار', 'بحث', 'هندسة'],
         contactInfo: 'eng@hilla.edu.iq',
+        allowRegistration: true,
+        registrationDeadline: now.add(const Duration(days: 10)),
       ),
       Event(
         id: '2',
@@ -42,6 +44,8 @@ class EventsData {
         currentAttendees: 35,
         tags: ['ذكاء اصطناعي', 'طب', 'تشخيص', 'تقنية'],
         contactInfo: 'med@hilla.edu.iq',
+        allowRegistration: true,
+        registrationDeadline: now.add(const Duration(days: 5)),
       ),
       Event(
         id: '3',

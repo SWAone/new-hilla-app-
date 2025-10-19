@@ -94,18 +94,64 @@ class QuickNewsSection extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Icon
+          // Image
           Container(
             width: 48.w,
             height: 48.w,
             decoration: BoxDecoration(
-              color: newsItem.categoryColor.withOpacity(0.1),
               borderRadius: BorderRadius.circular(12.r),
+              boxShadow: [
+                BoxShadow(
+                  color: newsItem.categoryColor.withOpacity(0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-            child: Icon(
-              _getNewsIcon(newsItem.category),
-              color: newsItem.categoryColor,
-              size: 24.sp,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(12.r),
+              child: Image.network(
+                      'https://petapixel.com/assets/uploads/2024/01/The-Star-of-System-Sol-Rectangle-640x800.jpg',
+                      fit: BoxFit.cover,
+                      headers: const {
+                        'User-Agent': 'Mozilla/5.0 (compatible; Flutter App)',
+                      },
+                      cacheWidth: 200,
+                      cacheHeight: 200,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: newsItem.categoryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                          child: Icon(
+                            _getNewsIcon(newsItem.category),
+                            color: newsItem.categoryColor,
+                            size: 24.sp,
+                          ),
+                        );
+                      },
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          decoration: BoxDecoration(
+                            color: newsItem.categoryColor.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12.r),
+                          ),
+                          child: Center(
+                            child: SizedBox(
+                              width: 16.w,
+                              height: 16.w,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: newsItem.categoryColor,
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                    )
+                 
             ),
           ),
           

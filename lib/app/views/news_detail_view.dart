@@ -183,7 +183,7 @@ class NewsDetailView extends StatelessWidget {
           color: color,
         ),
         SizedBox(width: 4.w),
-        Expanded(
+        Flexible(
           child: Text(
             label,
             style: TextStyle(
@@ -266,7 +266,7 @@ class NewsDetailView extends StatelessWidget {
           Wrap(
             spacing: 8.w,
             runSpacing: 8.h,
-            children: news.tags.map((tag) => Container(
+            children: news.tags.map<Widget>((tag) => Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
               decoration: BoxDecoration(
                 color: news.categoryColor.withOpacity(0.1),

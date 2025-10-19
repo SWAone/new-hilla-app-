@@ -112,14 +112,6 @@ class _HeroSliderState extends State<HeroSlider> {
       margin: EdgeInsets.symmetric(horizontal: 20.w),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(20.r),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            item.primaryColor,
-            item.secondaryColor,
-          ],
-        ),
         boxShadow: [
           BoxShadow(
             color: item.primaryColor.withOpacity(0.3),
@@ -128,101 +120,171 @@ class _HeroSliderState extends State<HeroSlider> {
           ),
         ],
       ),
-      child: Stack(
-        children: [
-          // Background Pattern
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20.r),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    item.primaryColor.withOpacity(0.8),
-                    item.secondaryColor.withOpacity(0.6),
-                  ],
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20.r),
+        child: Stack(
+          children: [
+            // Background Image or Gradient
+            Positioned.fill(
+              child: item.imageUrl != null && item.imageUrl!.isNotEmpty
+                  ? Image.network(
+                      item.imageUrl!,
+                      fit: BoxFit.cover,
+                      headers: const {
+                        'User-Agent': 'Mozilla/5.0 (compatible; Flutter App)',
+                      },
+                      cacheWidth: 800,
+                      cacheHeight: 600,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                item.primaryColor,
+                                item.secondaryColor,
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    )
+                  : Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            item.primaryColor,
+                            item.secondaryColor,
+                          ],
+                        ),
+                      ),
+                    ),
+            ),
+            
+            // Dark Overlay for better text visibility
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.6),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
           
-          // Content
-          Padding(
-            padding: EdgeInsets.all(24.w),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Icon
-                Container(
-                  width: 60.w,
-                  height: 60.w,
-                  decoration: BoxDecoration(
-                    color: AppColors.textOnPrimary.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(16.r),
-                  ),
-                  child: Icon(
-                    item.icon,
-                    color: AppColors.textOnPrimary,
-                    size: 30.sp,
-                  ),
-                ),
-                
-                SizedBox(height: 16.h),
-                
-                // Title
-                Text(
-                  item.title,
-                  style: TextStyle(
-                    fontSize: 20.sp,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.textOnPrimary,
-                    height: 1.2,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                
-                SizedBox(height: 8.h),
-                
-                // Description
-                Text(
-                  item.description,
-                  style: TextStyle(
-                    fontSize: 14.sp,
-                    color: AppColors.textOnPrimary.withOpacity(0.9),
-                    height: 1.4,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                
-                const Spacer(),
-                
-                // Action Button
-                Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
-                  decoration: BoxDecoration(
-                    color: AppColors.textOnPrimary.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(20.r),
-                    border: Border.all(
-                      color: AppColors.textOnPrimary.withOpacity(0.3),
-                      width: 1,
+            // Content
+            Padding(
+              padding: EdgeInsets.all(24.w),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Icon
+                  Container(
+                    width: 60.w,
+                    height: 60.w,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(16.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Icon(
+                      item.icon,
+                      color: Colors.white,
+                      size: 30.sp,
                     ),
                   ),
-                  child: Text(
-                    item.buttonText,
+                  
+                  SizedBox(height: 16.h),
+                  
+                  // Title
+                  Text(
+                    item.title,
                     style: TextStyle(
-                      fontSize: 12.sp,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.textOnPrimary,
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                      height: 1.2,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withOpacity(0.5),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  
+                  SizedBox(height: 8.h),
+                  
+                  // Description
+                  Text(
+                    item.description,
+                    style: TextStyle(
+                      fontSize: 14.sp,
+                      color: Colors.white.withOpacity(0.9),
+                      height: 1.4,
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 2,
+                          offset: const Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  
+                  const Spacer(),
+                  
+                  // Action Button
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(20.r),
+                      border: Border.all(
+                        color: Colors.white.withOpacity(0.3),
+                        width: 1,
+                      ),
+                    ),
+                    child: Text(
+                      item.buttonText,
+                      style: TextStyle(
+                        fontSize: 12.sp,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(
+                            color: Colors.black.withOpacity(0.3),
+                            blurRadius: 2,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -235,6 +297,7 @@ class SliderItem {
   final Color primaryColor;
   final Color secondaryColor;
   final String buttonText;
+  final String? imageUrl;
   final VoidCallback? onTap;
 
   SliderItem({
@@ -244,6 +307,7 @@ class SliderItem {
     required this.primaryColor,
     required this.secondaryColor,
     required this.buttonText,
+    this.imageUrl,
     this.onTap,
   });
 }

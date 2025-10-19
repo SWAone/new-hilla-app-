@@ -23,7 +23,7 @@ class DepartmentCard extends StatelessWidget {
     return AnimatedCard(
       onTap: onTap,
       delay: animationDelay,
-      backgroundColor: primaryColor.withOpacity(0.05),
+      backgroundColor: primaryColor.withOpacity(0.2),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -17,6 +17,8 @@ class Event {
   final int currentAttendees;
   final List<String> tags;
   final String contactInfo;
+  final bool allowRegistration;
+  final DateTime? registrationDeadline;
 
   Event({
     required this.id,
@@ -35,11 +37,27 @@ class Event {
     this.currentAttendees = 0,
     required this.tags,
     required this.contactInfo,
+    this.allowRegistration = false,
+    this.registrationDeadline,
   });
 
   bool get isUpcoming => status == EventStatus.upcoming;
   bool get isOngoing => status == EventStatus.ongoing;
   bool get isCompleted => status == EventStatus.completed;
+  
+  bool get canRegister {
+    if (!allowRegistration) return false;
+    if (status != EventStatus.upcoming) return false;
+    if (registrationDeadline != null && DateTime.now().isAfter(registrationDeadline!)) return false;
+    if (maxAttendees > 0 && currentAttendees >= maxAttendees) return false;
+    return true;
+  }
+  
+  bool get isRegistrationOpen {
+    if (!allowRegistration) return false;
+    if (registrationDeadline == null) return true;
+    return DateTime.now().isBefore(registrationDeadline!);
+  }
 
   String get dateRange {
     if (startDate.day == endDate.day && startDate.month == endDate.month && startDate.year == endDate.year) {

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'app/controllers/college_controller.dart';
 import 'app/controllers/news_controller.dart';
 import 'app/controllers/events_controller.dart';
@@ -27,6 +28,18 @@ class MyApp extends StatelessWidget {
           initialBinding: AppBinding(),
           defaultTransition: Transition.fade,
           transitionDuration: const Duration(milliseconds: 300),
+          // إضافة دعم RTL للعربية
+          locale: const Locale('ar', 'IQ'),
+          fallbackLocale: const Locale('ar', 'IQ'),
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: const [
+            Locale('ar', 'IQ'),
+            Locale('en', 'US'),
+          ],
         );
       },
     );

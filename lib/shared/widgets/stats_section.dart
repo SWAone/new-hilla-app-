@@ -19,47 +19,47 @@ class StatsSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Header
-          Row(
-            children: [
-              Icon(
-                Icons.analytics_rounded,
-                color: AppColors.primary,
-                size: 24.sp,
-              ),
-              SizedBox(width: 8.w),
-              Text(
-                'إحصائيات الجامعة',
-                style: TextStyle(
-                  fontSize: 18.sp,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
-                ),
-              ),
-            ],
-          ),
+          // Row(
+          //   children: [
+          //     Icon(
+          //       Icons.analytics_rounded,
+          //       color: AppColors.primary,
+          //       size: 24.sp,
+          //     ),
+          //     SizedBox(width: 8.w),
+          //     Text(
+          //       'إحصائيات الجامعة',
+          //       style: TextStyle(
+          //         fontSize: 18.sp,
+          //         fontWeight: FontWeight.bold,
+          //         color: AppColors.textPrimary,
+          //       ),
+          //     ),
+          //   ],
+          // ),
           
-          SizedBox(height: 16.h),
+          // SizedBox(height: 16.h),
           
           // Stats Grid
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: 0.w,
-              mainAxisSpacing: 0.h,
-              childAspectRatio: 1.3,
-              mainAxisExtent: 190.h
-            ),
-            itemCount: stats.length,
-            itemBuilder: (context, index) {
-              final stat = stats[index];
-              return AnimatedCard(
-                delay: index * 100,
-                child: _buildStatCard(stat),
-              );
-            },
-          ),
+          // GridView.builder(
+          //   shrinkWrap: true,
+          //   physics: const NeverScrollableScrollPhysics(),
+          //   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          //     crossAxisCount: 2,
+          //     crossAxisSpacing: 0.w,
+          //     mainAxisSpacing: 0.h,
+          //     childAspectRatio: 1.3,
+          //     mainAxisExtent: 190.h
+          //   ),
+          //   itemCount: stats.length,
+          //   itemBuilder: (context, index) {
+          //     final stat = stats[index];
+          //     return AnimatedCard(
+          //       delay: index * 100,
+          //       child: _buildStatCard(stat),
+          //     );
+          //   },
+          // ),
         ],
       ),
     );

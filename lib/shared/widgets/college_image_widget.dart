@@ -23,14 +23,6 @@ class CollegeImageWidget extends StatelessWidget {
       height: height.w,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16.r),
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            college.primaryColor,
-            college.secondaryColor,
-          ],
-        ),
         boxShadow: [
           BoxShadow(
             color: college.primaryColor.withOpacity(0.3),
@@ -39,78 +31,162 @@ class CollegeImageWidget extends StatelessWidget {
           ),
         ],
       ),
-      child: Stack(
-        children: [
-          // Background Pattern
-          Positioned.fill(
-            child: CustomPaint(
-              painter: CollegePatternPainter(
-                primaryColor: college.primaryColor,
-                secondaryColor: college.secondaryColor,
-                patternType: _getPatternType(college.iconPath),
-              ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(16.r),
+        child: Stack(
+          children: [
+            // Background Image or Gradient
+            Positioned.fill(
+              child: college.imageUrl.isNotEmpty
+                  ? Image.network(
+                      college.imageUrl,
+                      fit: BoxFit.cover,
+                      headers: const {
+                        'User-Agent': 'Mozilla/5.0 (compatible; Flutter App)',
+                      },
+                      cacheWidth: 400,
+                      cacheHeight: 400,
+                      errorBuilder: (context, error, stackTrace) {
+                        print('Error loading image: $error');
+                        return Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                college.primaryColor,
+                                college.secondaryColor,
+                              ],
+                            ),
+                          ),
+                          child: CustomPaint(
+                            painter: CollegePatternPainter(
+                              primaryColor: college.primaryColor,
+                              secondaryColor: college.secondaryColor,
+                              patternType: _getPatternType(college.iconPath),
+                            ),
+                          ),
+                        );
+                      },
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                college.primaryColor,
+                                college.secondaryColor,
+                              ],
+                            ),
+                          ),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: AppColors.textOnPrimary,
+                              strokeWidth: 2,
+                            ),
+                          ),
+                        );
+                      },
+                    )
+                  : Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            college.primaryColor,
+                            college.secondaryColor,
+                          ],
+                        ),
+                      ),
+                      child: CustomPaint(
+                        painter: CollegePatternPainter(
+                          primaryColor: college.primaryColor,
+                          secondaryColor: college.secondaryColor,
+                          patternType: _getPatternType(college.iconPath),
+                        ),
+                      ),
+                    ),
             ),
-          ),
-          
-          // Icon
-          Center(
-            child: Container(
-              width: 50.w,
-              height: 50.w,
-              decoration: BoxDecoration(
-                color: AppColors.textOnPrimary.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Icon(
-                _getCollegeIcon(college.iconPath),
-                color: AppColors.textOnPrimary,
-                size: 28.sp,
-              ),
-            ),
-          ),
-          
-          // Department Count Badge
-          Positioned(
-            top: 8.h,
-            right: 8.w,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-              decoration: BoxDecoration(
-                color: AppColors.textOnPrimary.withOpacity(0.9),
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: Text(
-                '${college.departments.length}',
-                style: TextStyle(
-                  fontSize: 10.sp,
-                  fontWeight: FontWeight.bold,
-                  color: college.primaryColor,
+            
+            // Dark Overlay for better text visibility
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.3),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-          
-          // College Initials
-          Positioned(
-            bottom: 8.h,
-            left: 8.w,
-            child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
-              decoration: BoxDecoration(
-                color: AppColors.textOnPrimary.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(6.r),
-              ),
-              child: Text(
-                _getCollegeInitials(college.name),
-                style: TextStyle(
-                  fontSize: 8.sp,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textOnPrimary,
+            
+            // Icon (always show as fallback)
+            Center(
+              child: Container(
+                width: 50.w,
+                height: 50.w,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(12.r),
+                ),
+                child: Icon(
+                  _getCollegeIcon(college.iconPath),
+                  color: Colors.white,
+                  size: 28.sp,
                 ),
               ),
             ),
-          ),
-        ],
+            
+            // Department Count Badge
+            Positioned(
+              top: 8.h,
+              right: 8.w,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.9),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Text(
+                  '${college.departments.length}',
+                  style: TextStyle(
+                    fontSize: 10.sp,
+                    fontWeight: FontWeight.bold,
+                    color: college.primaryColor,
+                  ),
+                ),
+              ),
+            ),
+            
+            // College Initials
+            Positioned(
+              bottom: 8.h,
+              left: 8.w,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(6.r),
+                ),
+                child: Text(
+                  _getCollegeInitials(college.name),
+                  style: TextStyle(
+                    fontSize: 8.sp,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

@@ -5,6 +5,7 @@ import '../../app/controllers/events_controller.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/event_model.dart';
 import '../../shared/widgets/animated_card.dart';
+import 'event_registration_view.dart';
 
 class EventDetailView extends StatelessWidget {
   final String eventId;
@@ -41,7 +42,7 @@ class EventDetailView extends StatelessWidget {
             backgroundColor: event.categoryColor,
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
-                event.type.displayName,
+                _getEventTypeName(event.type),
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
@@ -109,6 +110,9 @@ class EventDetailView extends StatelessWidget {
                   // Contact Info
                   _buildContactInfo(event),
                   
+                  // Registration Button
+                  if (event.allowRegistration) _buildRegistrationSection(event),
+                  
                   SizedBox(height: 20.h),
                 ],
               ),
@@ -149,7 +153,7 @@ class EventDetailView extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16.r),
                 ),
                 child: Text(
-                  event.type.displayName,
+                  _getEventTypeName(event.type),
                   style: TextStyle(
                     fontSize: 12.sp,
                     fontWeight: FontWeight.bold,
@@ -165,7 +169,7 @@ class EventDetailView extends StatelessWidget {
                   borderRadius: BorderRadius.circular(16.r),
                 ),
                 child: Text(
-                  event.status.displayName,
+                  _getEventStatusName(event.status),
                   style: TextStyle(
                     fontSize: 12.sp,
                     fontWeight: FontWeight.bold,
@@ -324,7 +328,7 @@ class EventDetailView extends StatelessWidget {
             ],
           ),
           SizedBox(height: 16.h),
-          ...event.speakers.map((speaker) => Padding(
+          ...event.speakers.map<Widget>((speaker) => Padding(
             padding: EdgeInsets.only(bottom: 8.h),
             child: Row(
               children: [
@@ -475,7 +479,7 @@ class EventDetailView extends StatelessWidget {
           Wrap(
             spacing: 8.w,
             runSpacing: 8.h,
-            children: event.tags.map((tag) => Container(
+            children: event.tags.map<Widget>((tag) => Container(
               padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
               decoration: BoxDecoration(
                 color: event.categoryColor.withOpacity(0.1),
@@ -582,5 +586,190 @@ class EventDetailView extends StatelessWidget {
       default:
         return AppColors.textSecondary;
     }
+  }
+
+  String _getEventTypeName(EventType type) {
+    switch (type) {
+      case EventType.conference:
+        return 'مؤتمر';
+      case EventType.workshop:
+        return 'ورشة عمل';
+      case EventType.seminar:
+        return 'ندوة';
+      case EventType.cultural:
+        return 'ثقافي';
+      case EventType.sports:
+        return 'رياضي';
+      case EventType.academic:
+        return 'أكاديمي';
+      case EventType.graduation:
+        return 'تخرج';
+      case EventType.ceremony:
+        return 'حفل';
+    }
+  }
+
+  String _getEventStatusName(EventStatus status) {
+    switch (status) {
+      case EventStatus.upcoming:
+        return 'قادم';
+      case EventStatus.ongoing:
+        return 'جاري';
+      case EventStatus.completed:
+        return 'منتهي';
+    }
+  }
+
+  Widget _buildRegistrationSection(Event event) {
+    return AnimatedCard(
+      delay: 600,
+      margin: EdgeInsets.all(20.w),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(
+                Icons.how_to_reg,
+                color: event.categoryColor,
+                size: 24.sp,
+              ),
+              SizedBox(width: 8.w),
+              Text(
+                'تسجيل الحضور',
+                style: TextStyle(
+                  fontSize: 18.sp,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 16.h),
+          
+          // Registration Status
+          _buildRegistrationStatus(event),
+          
+          SizedBox(height: 16.h),
+          
+          // Registration Button
+          if (event.canRegister)
+            _buildRegistrationButton(event)
+          else
+            _buildRegistrationDisabled(event),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRegistrationStatus(Event event) {
+    String statusText;
+    Color statusColor;
+    
+    if (!event.allowRegistration) {
+      statusText = 'التسجيل غير متاح لهذه الفعالية';
+      statusColor = AppColors.textSecondary;
+    } else if (event.status != EventStatus.upcoming) {
+      statusText = 'التسجيل متاح للفعاليات القادمة فقط';
+      statusColor = AppColors.textSecondary;
+    } else if (event.registrationDeadline != null && DateTime.now().isAfter(event.registrationDeadline!)) {
+      statusText = 'انتهت فترة التسجيل';
+      statusColor = AppColors.error;
+    } else if (event.maxAttendees > 0 && event.currentAttendees >= event.maxAttendees) {
+      statusText = 'تم الوصول للحد الأقصى من المشاركين';
+      statusColor = AppColors.error;
+    } else {
+      statusText = 'التسجيل متاح';
+      statusColor = AppColors.success;
+    }
+
+    return Container(
+      padding: EdgeInsets.all(12.w),
+      decoration: BoxDecoration(
+        color: statusColor.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8.r),
+        border: Border.all(color: statusColor.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.info,
+            color: statusColor,
+            size: 16.sp,
+          ),
+          SizedBox(width: 8.w),
+          Expanded(
+            child: Text(
+              statusText,
+              style: TextStyle(
+                fontSize: 14.sp,
+                color: statusColor,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildRegistrationButton(Event event) {
+    return SizedBox(
+      width: double.infinity,
+      height: 50.h,
+      child: ElevatedButton.icon(
+        onPressed: () => _openRegistrationForm(event),
+        icon: Icon(Icons.how_to_reg, size: 20.sp),
+        label: Text(
+          'تسجيل الحضور',
+          style: TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: event.categoryColor,
+          foregroundColor: AppColors.textOnPrimary,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          elevation: 2,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildRegistrationDisabled(Event event) {
+    return SizedBox(
+      width: double.infinity,
+      height: 50.h,
+      child: ElevatedButton.icon(
+        onPressed: null,
+        icon: Icon(Icons.block, size: 20.sp),
+        label: Text(
+          'التسجيل غير متاح',
+          style: TextStyle(
+            fontSize: 16.sp,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.textSecondary,
+          foregroundColor: AppColors.textOnPrimary,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12.r),
+          ),
+          elevation: 0,
+        ),
+      ),
+    );
+  }
+
+  void _openRegistrationForm(Event event) {
+    Get.to(
+      () => EventRegistrationView(event: event),
+      transition: Transition.rightToLeft,
+      duration: const Duration(milliseconds: 300),
+    );
   }
 }
