@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'app/controllers/college_controller.dart';
 import 'app/controllers/news_controller.dart';
 import 'app/controllers/events_controller.dart';
+import 'app/controllers/slider_controller.dart';
 import 'app/views/main_view.dart';
 import 'core/theme/app_theme.dart';
 
@@ -52,5 +53,6 @@ class AppBinding extends Bindings {
     Get.put<CollegeController>(CollegeController());
     Get.put<NewsController>(NewsController());
     Get.put<EventsController>(EventsController());
+    Get.put<SliderController>(SliderController());
   }
 }

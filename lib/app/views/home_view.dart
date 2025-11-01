@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import '../../app/controllers/college_controller.dart';
 import '../../app/controllers/news_controller.dart';
 import '../../app/controllers/events_controller.dart';
+import '../../app/controllers/slider_controller.dart';
 import '../../core/theme/app_colors.dart';
 import '../../shared/widgets/modern_college_card.dart';
 import '../../shared/widgets/hero_slider.dart';
@@ -27,6 +28,7 @@ class HomeView extends StatelessWidget {
     final CollegeController collegeController = Get.find<CollegeController>();
     final NewsController newsController = Get.find<NewsController>();
     final EventsController eventsController = Get.find<EventsController>();
+    final SliderController sliderController = Get.find<SliderController>();
 
     return Scaffold(
       backgroundColor: AppColors.background,
@@ -44,7 +46,7 @@ class HomeView extends StatelessWidget {
             child: Column(
               children: [
                 // Hero Slider
-                _buildHeroSlider(),
+                _buildHeroSlider(sliderController),
                 
                 SizedBox(height: 24.h),
                 
@@ -67,6 +69,8 @@ class HomeView extends StatelessWidget {
                 _buildCollegesSection(collegeController),
                 
                 SizedBox(height: 20.h),
+
+                
               ],
             ),
           );
@@ -75,40 +79,23 @@ class HomeView extends StatelessWidget {
     );
   }
 
-  Widget _buildHeroSlider() {
-    final sliderItems = [
-      SliderItem(
-        title: 'مرحباً بك في جامعة الحلة',
-        description: 'جامعة عراقية رائدة في التعليم والبحث العلمي',
-        icon: Icons.school_rounded,
-        primaryColor: AppColors.primary,
-        secondaryColor: AppColors.primaryLight,
-        buttonText: 'استكشف الجامعة',
-        imageUrl: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&h=600&fit=crop&auto=format',
-      ),
-      SliderItem(
-        title: 'التعليم الرقمي',
-        description: 'نوفر أحدث التقنيات في التعليم الإلكتروني',
-        icon: Icons.computer_rounded,
-        primaryColor: AppColors.secondary,
-        secondaryColor: AppColors.secondaryLight,
-        buttonText: 'تعلم الآن',
-        imageUrl: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&h=600&fit=crop&auto=format',
-      ),
-      SliderItem(
-        title: 'البحث العلمي',
-        description: 'مركز للابتكار والبحث في مختلف المجالات',
-        icon: Icons.science_rounded,
-        primaryColor: AppColors.accent,
-        secondaryColor: AppColors.accentLight,
-        buttonText: 'اكتشف المزيد',
-        imageUrl: 'https://images.unsplash.com/photo-1532187863486-abf9dbad1b69?w=800&h=600&fit=crop&auto=format',
-      ),
-    ];
+  Widget _buildHeroSlider(SliderController controller) {
+    return Obx(() {
+      if (controller.isLoading.value) {
+        return Container(
+          height: 250.h,
+          child: Center(
+            child: CircularProgressIndicator(
+              valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+            ),
+          ),
+        );
+      }
 
-    return HeroSlider(
-      items: sliderItems,
-    );
+      return HeroSlider(
+        items: controller.sliderItems.toList(),
+      );
+    });
   }
 
   Widget _buildStatsSection() {

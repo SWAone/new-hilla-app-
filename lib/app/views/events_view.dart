@@ -31,11 +31,11 @@ class EventsView extends StatelessWidget {
             // Content
             Expanded(
               child: Obx(() {
-                if (controller.isLoading.value) {
+                if (controller.isLoading.value && controller.events.isEmpty) {
                   return _buildLoadingState();
                 }
                 
-                if (controller.hasError.value) {
+                if (controller.hasError.value && controller.events.isEmpty) {
                   return _buildErrorState(controller);
                 }
                 
@@ -43,7 +43,10 @@ class EventsView extends StatelessWidget {
                   return _buildEmptyState();
                 }
                 
-                return _buildEventsList(controller);
+                return RefreshIndicator(
+                  onRefresh: () => controller.loadEvents(),
+                  child: _buildEventsList(controller),
+                );
               }),
             ),
           ],
