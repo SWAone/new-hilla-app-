@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../../.."
+		},
+		{
+			"path": "../../../hilla-media-api"
+		},
+		{
+			"path": "../../../../windows_dashbord_hilla_media"
+		}
+	],
+	"settings": {}
+}

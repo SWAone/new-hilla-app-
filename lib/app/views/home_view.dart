@@ -11,6 +11,7 @@ import '../../shared/widgets/hero_slider.dart';
 import '../../shared/widgets/stats_section.dart';
 import '../../shared/widgets/quick_news_section.dart';
 import '../../shared/widgets/quick_events_section.dart';
+import '../../360_views/screens/virtual_tour_screen.dart';
 import 'college_detail_view.dart';
 
 class HomeView extends StatelessWidget {
@@ -47,6 +48,11 @@ class HomeView extends StatelessWidget {
               children: [
                 // Hero Slider
                 _buildHeroSlider(sliderController),
+                
+                SizedBox(height: 20.h),
+                
+                // Virtual Tour Button
+                _buildVirtualTourButton(),
                 
                 SizedBox(height: 24.h),
                 
@@ -98,6 +104,117 @@ class HomeView extends StatelessWidget {
     });
   }
 
+  Widget _buildVirtualTourButton() {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            Get.to(
+              () => const VirtualTourScreen(),
+              transition: Transition.fadeIn,
+              duration: const Duration(milliseconds: 300),
+            );
+          },
+          borderRadius: BorderRadius.circular(20.r),
+          child: Container(
+            padding: EdgeInsets.all(20.w),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  AppColors.primary,
+                  AppColors.primaryLight,
+                  AppColors.secondary,
+                ],
+              ),
+              borderRadius: BorderRadius.circular(20.r),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withOpacity(0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 5),
+                ),
+                BoxShadow(
+                  color: AppColors.shadowMedium,
+                  blurRadius: 10,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                // Icon Container
+                Container(
+                  width: 56.w,
+                  height: 56.w,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(16.r),
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.3),
+                      width: 2,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.explore_rounded,
+                    color: Colors.white,
+                    size: 28.sp,
+                  ),
+                ),
+                
+                SizedBox(width: 16.w),
+                
+                // Text Content
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'التجول الافتراضي في الجامعة',
+                        style: TextStyle(
+                          fontSize: 18.sp,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(height: 4.h),
+                      Text(
+                        'استكشف الجامعة بجولة 360 درجة',
+                        style: TextStyle(
+                          fontSize: 13.sp,
+                          color: Colors.white.withOpacity(0.9),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // Arrow Icon
+                Container(
+                  width: 36.w,
+                  height: 36.w,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Icon(
+                    Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white,
+                    size: 18.sp,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildStatsSection() {
     final stats = [
       StatItem(
@@ -119,7 +236,7 @@ class HomeView extends StatelessWidget {
       StatItem(
         title: 'الأقسام',
         description: 'التخصصات المختلفة',
-        value: '18+',
+        value: '19+',
         icon: Icons.category_rounded,
         primaryColor: AppColors.accent,
         secondaryColor: AppColors.accentLight,
