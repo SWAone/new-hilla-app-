@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/theme/app_colors.dart';
 
 class HeroSlider extends StatefulWidget {
@@ -137,59 +138,48 @@ class _HeroSliderState extends State<HeroSlider> {
                       ),
                       child: Transform.scale(
                         scale: 1.1, // تكبير الصورة بنسبة 10% لضمان تغطية الحاوية بالكامل
-                        child: Image.network(
-                          item.imageUrl!,
+                        child: CachedNetworkImage(
+                          imageUrl: item.imageUrl!,
                           width: double.infinity,
                           height: double.infinity,
                           fit: BoxFit.cover,
-                          alignment: Alignment.center,
-                          repeat: ImageRepeat.noRepeat,
-                          headers: const {
+                          memCacheHeight: 600,
+                          httpHeaders: const {
                             'User-Agent': 'Mozilla/5.0 (compatible; Flutter App)',
                           },
-                          cacheHeight: 600,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Container(
-                              width: double.infinity,
-                              height: double.infinity,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    item.primaryColor,
-                                    item.secondaryColor,
-                                  ],
-                                ),
+                          placeholder: (context, url) => Container(
+                            width: double.infinity,
+                            height: double.infinity,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  item.primaryColor,
+                                  item.secondaryColor,
+                                ],
                               ),
-                            );
-                          },
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return Container(
-                              width: double.infinity,
-                              height: double.infinity,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    item.primaryColor,
-                                    item.secondaryColor,
-                                  ],
-                                ),
+                            ),
+                            child: Center(
+                              child: CircularProgressIndicator(
+                                color: Colors.white,
                               ),
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  value: loadingProgress.expectedTotalBytes != null
-                                      ? loadingProgress.cumulativeBytesLoaded /
-                                          loadingProgress.expectedTotalBytes!
-                                      : null,
-                                  color: Colors.white,
-                                ),
+                            ),
+                          ),
+                          errorWidget: (context, url, error) => Container(
+                            width: double.infinity,
+                            height: double.infinity,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  item.primaryColor,
+                                  item.secondaryColor,
+                                ],
                               ),
-                            );
-                          },
+                            ),
+                          ),
                         ),
                       ),
                     )

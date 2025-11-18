@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../app/controllers/college_controller.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/college_model.dart';
@@ -78,28 +79,43 @@ class CollegeDetailView extends StatelessWidget {
                     // Background Image
                     Positioned.fill(
                       child: college.imageUrl.isNotEmpty
-                          ? Image.network(
-                              college.imageUrl,
+                          ? CachedNetworkImage(
+                              imageUrl: college.imageUrl,
                               fit: BoxFit.cover,
-                              headers: const {
+                              httpHeaders: const {
                                 'User-Agent': 'Mozilla/5.0 (compatible; Flutter App)',
                               },
-                              cacheWidth: 800,
-                              cacheHeight: 600,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                      colors: [
-                                        college.primaryColor.withOpacity(0.3),
-                                        college.secondaryColor.withOpacity(0.2),
-                                      ],
-                                    ),
+                              memCacheWidth: 800,
+                              memCacheHeight: 600,
+                              placeholder: (context, url) => Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      college.primaryColor.withOpacity(0.3),
+                                      college.secondaryColor.withOpacity(0.2),
+                                    ],
                                   ),
-                                );
-                              },
+                                ),
+                                child: Center(
+                                  child: CircularProgressIndicator(
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) => Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      college.primaryColor.withOpacity(0.3),
+                                      college.secondaryColor.withOpacity(0.2),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             )
                           : Container(
                               decoration: BoxDecoration(

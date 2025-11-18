@@ -6,7 +6,9 @@ import 'app/controllers/college_controller.dart';
 import 'app/controllers/news_controller.dart';
 import 'app/controllers/events_controller.dart';
 import 'app/controllers/slider_controller.dart';
+import 'app/controllers/update_controller.dart';
 import 'app/views/main_view.dart';
+import 'app/widgets/update_checker.dart';
 import 'core/theme/app_theme.dart';
 
 void main() {
@@ -25,7 +27,9 @@ class MyApp extends StatelessWidget {
           title: 'جامعة الحلة',
           debugShowCheckedModeBanner: false,
           theme: AppTheme.lightTheme,
-          home: const MainView(),
+          home: UpdateChecker(
+            child: const MainView(),
+          ),
           initialBinding: AppBinding(),
           defaultTransition: Transition.fade,
           transitionDuration: const Duration(milliseconds: 300),
@@ -50,6 +54,7 @@ class MyApp extends StatelessWidget {
 class AppBinding extends Bindings {
   @override
   void dependencies() {
+    Get.put<UpdateController>(UpdateController());
     Get.put<CollegeController>(CollegeController());
     Get.put<NewsController>(NewsController());
     Get.put<EventsController>(EventsController());

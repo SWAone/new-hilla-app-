@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../models/tour_scene.dart';
 
 /// Manages scene loading, caching, and navigation.
@@ -12,22 +13,35 @@ class SceneManager {
   });
 
   /// Preloads all scene images in the background.
+  /// Uses CachedNetworkImageProvider for better caching.
   Future<void> precacheAllScenes() async {
     for (final scene in scenes.values) {
       if (!context.mounted) return;
       if (scene.imageUrl.isNotEmpty) {
-        await precacheImage(NetworkImage(scene.imageUrl), context)
-            .catchError((_) {});
+        try {
+          // Use CachedNetworkImageProvider for better caching
+          final imageProvider = CachedNetworkImageProvider(scene.imageUrl);
+          await precacheImage(imageProvider, context);
+        } catch (e) {
+          // Continue with other images if one fails
+          debugPrint('Error precaching scene image: $e');
+        }
       }
     }
   }
 
   /// Preloads a specific scene image.
+  /// Uses CachedNetworkImageProvider for better caching.
   Future<void> precacheScene(TourScene scene) async {
     if (!context.mounted) return;
     if (scene.imageUrl.isNotEmpty) {
-      await precacheImage(NetworkImage(scene.imageUrl), context)
-          .catchError((_) {});
+      try {
+        // Use CachedNetworkImageProvider for better caching
+        final imageProvider = CachedNetworkImageProvider(scene.imageUrl);
+        await precacheImage(imageProvider, context);
+      } catch (e) {
+        debugPrint('Error precaching scene image: $e');
+      }
     }
   }
 

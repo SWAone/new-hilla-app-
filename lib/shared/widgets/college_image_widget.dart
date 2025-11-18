@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/college_model.dart';
 import '../../core/theme/app_colors.dart';
 
@@ -37,13 +38,31 @@ class CollegeImageWidget extends StatelessWidget {
           children: [
             // Background Image or Gradient
             Positioned.fill(
-              child: college.imageUrl != null && college.imageUrl!.isNotEmpty
-                  ? Image.network(
-                      college.imageUrl!,
+              child: college.imageUrl.isNotEmpty
+                  ? CachedNetworkImage(
+                      imageUrl: college.imageUrl,
                       fit: BoxFit.cover,
-                      cacheWidth: 400,
-                      cacheHeight: 400,
-                      errorBuilder: (context, error, stackTrace) {
+                      memCacheWidth: 400,
+                      memCacheHeight: 400,
+                      placeholder: (context, url) => Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              college.primaryColor,
+                              college.secondaryColor,
+                            ],
+                          ),
+                        ),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: AppColors.textOnPrimary,
+                            strokeWidth: 2,
+                          ),
+                        ),
+                      ),
+                      errorWidget: (context, url, error) {
                         print('Error loading image: $error');
                         return Container(
                           decoration: BoxDecoration(
@@ -61,27 +80,6 @@ class CollegeImageWidget extends StatelessWidget {
                               primaryColor: college.primaryColor,
                               secondaryColor: college.secondaryColor,
                               patternType: _getPatternType(college.iconPath),
-                            ),
-                          ),
-                        );
-                      },
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                college.primaryColor,
-                                college.secondaryColor,
-                              ],
-                            ),
-                          ),
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: AppColors.textOnPrimary,
-                              strokeWidth: 2,
                             ),
                           ),
                         );

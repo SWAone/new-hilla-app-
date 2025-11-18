@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/college_model.dart';
 
@@ -83,10 +84,21 @@ class FacultyMemberCard extends StatelessWidget {
                             ),
                             child: ClipRRect(
                               borderRadius: BorderRadius.circular(18.r),
-                              child: Image.network(
-                                facultyMember.imageUrl,
+                              child: CachedNetworkImage(
+                                imageUrl: facultyMember.imageUrl,
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) {
+                                placeholder: (context, url) => Container(
+                                  decoration: BoxDecoration(
+                                    color: primaryColor.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(18.r),
+                                  ),
+                                  child: Center(
+                                    child: CircularProgressIndicator(
+                                      color: primaryColor,
+                                    ),
+                                  ),
+                                ),
+                                errorWidget: (context, url, error) {
                                   return Container(
                                     decoration: BoxDecoration(
                                       color: primaryColor.withOpacity(0.1),
@@ -96,21 +108,6 @@ class FacultyMemberCard extends StatelessWidget {
                                       Icons.person,
                                       color: primaryColor,
                                       size: 40.sp,
-                                    ),
-                                  );
-                                },
-                                loadingBuilder: (context, child, loadingProgress) {
-                                  if (loadingProgress == null) return child;
-                                  return Container(
-                                    decoration: BoxDecoration(
-                                      color: primaryColor.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(18.r),
-                                    ),
-                                    child: Center(
-                                      child: CircularProgressIndicator(
-                                        color: primaryColor,
-                                        strokeWidth: 2,
-                                      ),
                                     ),
                                   );
                                 },

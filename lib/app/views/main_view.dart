@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import '../../core/theme/app_colors.dart';
+import '../../360_views/services/tour_preload_service.dart';
 import 'home_view.dart';
 import 'news_view.dart';
 import 'events_view.dart';
@@ -29,6 +30,16 @@ class _MainViewState extends State<MainView> with TickerProviderStateMixin {
     ];
     _tabController = TabController(length: _pages.length, vsync: this);
     _tabController.addListener(_onTabChanged);
+    
+    // Start preloading tour scenes in the background after the first frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        // Start preloading asynchronously without blocking UI
+        TourPreloadService.preloadScenes(context).catchError((error) {
+          debugPrint('Error preloading tour scenes: $error');
+        });
+      }
+    });
   }
 
   void _onTabChanged() {

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../models/news_model.dart';
 import '../../core/theme/app_colors.dart';
 import 'animated_card.dart';
@@ -76,10 +77,27 @@ class NewsCard extends StatelessWidget {
                   topLeft: Radius.circular(16.r),
                   topRight: Radius.circular(16.r),
                 ),
-                child: Image.network(
-                  news.imageUrl!,
+                child: CachedNetworkImage(
+                  imageUrl: news.imageUrl!,
                   fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
+                  placeholder: (context, url) => Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          news.categoryColor.withOpacity(0.8),
+                          news.categoryColor.withOpacity(0.6),
+                        ],
+                      ),
+                    ),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) {
                     // في حالة فشل تحميل الصورة، عرض gradient
                     return Container(
                       decoration: BoxDecoration(
@@ -90,29 +108,6 @@ class NewsCard extends StatelessWidget {
                             news.categoryColor.withOpacity(0.8),
                             news.categoryColor.withOpacity(0.6),
                           ],
-                        ),
-                      ),
-                    );
-                  },
-                  loadingBuilder: (context, child, loadingProgress) {
-                    if (loadingProgress == null) return child;
-                    return Container(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            news.categoryColor.withOpacity(0.8),
-                            news.categoryColor.withOpacity(0.6),
-                          ],
-                        ),
-                      ),
-                      child: Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
-                              : null,
-                          color: AppColors.textOnPrimary,
                         ),
                       ),
                     );

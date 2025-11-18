@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:get/get.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../app/controllers/news_controller.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/news_model.dart';
@@ -149,21 +150,18 @@ class NewsDetailView extends StatelessWidget {
       fit: StackFit.expand,
       children: [
         if (hasImage)
-          Image.network(
-            news.imageUrl!,
+          CachedNetworkImage(
+            imageUrl: news.imageUrl!,
             fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
-              return Container(color: news.categoryColor);
-            },
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-              return Container(
-                color: news.categoryColor.withOpacity(0.4),
-                child: const Center(
-                  child: CircularProgressIndicator(),
-                ),
-              );
-            },
+            placeholder: (context, url) => Container(
+              color: news.categoryColor.withOpacity(0.4),
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+            errorWidget: (context, url, error) => Container(
+              color: news.categoryColor,
+            ),
           )
         else
           Container(color: news.categoryColor),

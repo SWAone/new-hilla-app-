@@ -1,8 +1,10 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:hilla_medi_app/360_views/data/scene_data.dart';
 import 'package:hilla_medi_app/360_views/models/tour_scene.dart';
 import 'package:hilla_medi_app/360_views/services/scene_manager.dart';
+import 'package:hilla_medi_app/360_views/services/tour_preload_service.dart';
 import 'package:hilla_medi_app/360_views/widgets/hotspot_widgets.dart';
 import 'package:hilla_medi_app/360_views/widgets/panorama_controls.dart';
 import 'package:panorama/panorama.dart';
@@ -40,6 +42,29 @@ class _VirtualTourScreenState extends State<VirtualTourScreen> {
     _loadScenes();
   }
 
+  @override
+  void dispose() {
+    // تنظيف كامل للحالة عند الخروج
+    _cleanup();
+    super.dispose();
+  }
+
+  void _cleanup() {
+    // إعادة تعيين جميع المتغيرات
+    _scenesById = null;
+    _sceneHistory.clear();
+    _activeScene = null;
+    _sceneManager = null;
+    _isLoading = true;
+    _errorMessage = null;
+    _zoom = _minZoom;
+    _panoramaKey = GlobalKey();
+    _panoramaInstanceId = 0;
+    _isSceneTransitioning = false;
+    _showPreviewOverlay = false;
+    _previewImageUrl = null;
+  }
+
   void _resetState() {
     _scenesById = null;
     _sceneHistory.clear();
@@ -58,14 +83,23 @@ class _VirtualTourScreenState extends State<VirtualTourScreen> {
   Future<void> _loadScenes() async {
     try {
       // Reset loading state
-      if (mounted) {
-        setState(() {
-          _isLoading = true;
-          _errorMessage = null;
-        });
-      }
+      if (!mounted) return;
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+      });
 
-      final scenes = await SceneData.buildScenes();
+      // Check if scenes are already preloaded
+      Map<String, TourScene> scenes;
+      if (TourPreloadService.isPreloaded && TourPreloadService.preloadedScenes != null) {
+        // Use preloaded scenes
+        scenes = TourPreloadService.preloadedScenes!;
+        debugPrint('VirtualTourScreen: Using preloaded scenes');
+      } else {
+        // Load scenes from API
+        scenes = await SceneData.buildScenes();
+      }
+      
       if (!mounted) return;
       
       setState(() {
@@ -93,13 +127,15 @@ class _VirtualTourScreenState extends State<VirtualTourScreen> {
         _errorMessage = null;
       });
 
-      // Precache scenes after loading
-      if (_sceneManager != null && mounted) {
+      // Only precache if not already preloaded
+      if (!TourPreloadService.isPreloaded && _sceneManager != null && mounted) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          if (mounted) {
+          if (mounted && _sceneManager != null) {
             _sceneManager!.precacheAllScenes();
           }
         });
+      } else {
+        debugPrint('VirtualTourScreen: Scenes already preloaded, skipping precache');
       }
     } catch (e) {
       if (!mounted) return;
@@ -112,8 +148,8 @@ class _VirtualTourScreenState extends State<VirtualTourScreen> {
 
   /// Navigates to a target scene with smooth transition.
   Future<void> _goToScene(String targetSceneId) async {
-    if (_sceneManager == null || _scenesById == null || _isSceneTransitioning) {
-      debugPrint('Cannot navigate: _sceneManager=${_sceneManager != null}, _scenesById=${_scenesById != null}, _isSceneTransitioning=$_isSceneTransitioning');
+    if (!mounted || _sceneManager == null || _scenesById == null || _isSceneTransitioning) {
+      debugPrint('Cannot navigate: mounted=$mounted, _sceneManager=${_sceneManager != null}, _scenesById=${_scenesById != null}, _isSceneTransitioning=$_isSceneTransitioning');
       return;
     }
     
@@ -149,11 +185,12 @@ class _VirtualTourScreenState extends State<VirtualTourScreen> {
       }
     }
     
-    if (targetScene == null) {
-      debugPrint('Target scene is null after search');
+    if (targetScene == null || !mounted) {
+      debugPrint('Target scene is null after search or widget disposed');
       return;
     }
     
+    if (!mounted) return;
     setState(() {
       _isSceneTransitioning = true;
     });
@@ -171,9 +208,10 @@ class _VirtualTourScreenState extends State<VirtualTourScreen> {
 
   /// Navigates back to the previous scene.
   Future<void> _popScene() async {
-    if (_sceneManager == null || _sceneHistory.length <= 1 || _isSceneTransitioning) return;
+    if (!mounted || _sceneManager == null || _sceneHistory.length <= 1 || _isSceneTransitioning) return;
     final targetSceneId = _sceneHistory[_sceneHistory.length - 2];
-    final targetScene = _sceneManager!.getScene(targetSceneId)!;
+    final targetScene = _sceneManager!.getScene(targetSceneId);
+    if (targetScene == null || !mounted) return;
     setState(() {
       _isSceneTransitioning = true;
     });
@@ -191,6 +229,7 @@ class _VirtualTourScreenState extends State<VirtualTourScreen> {
 
   /// Adjusts the zoom level.
   void _adjustZoom(double delta) {
+    if (!mounted) return;
     final nextZoom = (_zoom + delta).clamp(_minZoom, _maxZoom);
     final state = _panoramaKey.currentState;
     if (state == null) return;
@@ -202,9 +241,11 @@ class _VirtualTourScreenState extends State<VirtualTourScreen> {
       panoramaState.zoomDelta = 0;
       scene.update();
     });
-    setState(() {
-      _zoom = nextZoom;
-    });
+    if (mounted) {
+      setState(() {
+        _zoom = nextZoom;
+      });
+    }
   }
 
   /// Creates a simple black placeholder image for failed image loads.
@@ -235,6 +276,7 @@ class _VirtualTourScreenState extends State<VirtualTourScreen> {
 
   /// Handles view changes from the panorama widget.
   void _handleViewChanged(double longitude, double latitude, double tilt) {
+    if (!mounted) return;
     final state = _panoramaKey.currentState;
     if (state == null) return;
     final dynamic panoramaState = state;
@@ -250,7 +292,7 @@ class _VirtualTourScreenState extends State<VirtualTourScreen> {
     if (_showPreviewOverlay || _isSceneTransitioning) {
       needsSetState = true;
     }
-    if (needsSetState) {
+    if (needsSetState && mounted) {
       setState(() {
         if (nextZoom != null) {
           _zoom = nextZoom;
@@ -270,9 +312,185 @@ class _VirtualTourScreenState extends State<VirtualTourScreen> {
     if (_isLoading) {
       return Scaffold(
         backgroundColor: Colors.black,
-        body: const Center(
-          child: CircularProgressIndicator(
-            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+        body: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Colors.black,
+                Colors.grey[900]!,
+                Colors.black,
+              ],
+            ),
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Animated icon
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  duration: const Duration(milliseconds: 1500),
+                  curve: Curves.easeInOut,
+                  builder: (context, value, child) {
+                    return Transform.scale(
+                      scale: 0.8 + (value * 0.4),
+                      child: Transform.rotate(
+                        angle: value * 2 * 3.14159, // Full rotation
+                        child: Container(
+                          width: 120,
+                          height: 120,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                Colors.blue[400]!.withOpacity(0.3),
+                                Colors.purple[400]!.withOpacity(0.3),
+                                Colors.blue[600]!.withOpacity(0.3),
+                              ],
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.explore,
+                            color: Colors.white,
+                            size: 60,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 32),
+                // Loading text with animation
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  duration: const Duration(milliseconds: 1000),
+                  curve: Curves.easeOut,
+                  builder: (context, value, child) {
+                    return Opacity(
+                      opacity: value,
+                      child: Transform.translate(
+                        offset: Offset(0, 20 * (1 - value)),
+                        child: const Text(
+                          'جاري تحميل التجول الافتراضي...',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(height: 48),
+                // Modern loading indicator
+                Container(
+                  width: 200,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                  child: Stack(
+                    children: [
+                      TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0.0, end: 1.0),
+                        duration: const Duration(milliseconds: 2000),
+                        curve: Curves.easeInOut,
+                        onEnd: () {
+                          // Restart animation
+                          if (mounted && _isLoading) {
+                            setState(() {});
+                          }
+                        },
+                        builder: (context, value, child) {
+                          return Container(
+                            width: 200 * value,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  Colors.blue[400]!,
+                                  Colors.purple[400]!,
+                                  Colors.blue[600]!,
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(2),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.blue.withOpacity(0.5),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // Loading dots animation
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(3, (index) {
+                    return TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0.0, end: 1.0),
+                      duration: Duration(milliseconds: 600 + (index * 200)),
+                      curve: Curves.easeInOut,
+                      onEnd: () {
+                        if (mounted && _isLoading) {
+                          setState(() {});
+                        }
+                      },
+                      builder: (context, value, child) {
+                        return Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 4),
+                          width: 12,
+                          height: 12,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white.withOpacity(0.3 + (value * 0.7)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.blue.withOpacity(0.5 * value),
+                                blurRadius: 8,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  }),
+                ),
+                const SizedBox(height: 32),
+                // Subtitle text
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.0, end: 1.0),
+                  duration: const Duration(milliseconds: 1500),
+                  curve: Curves.easeOut,
+                  builder: (context, value, child) {
+                    return Opacity(
+                      opacity: value * 0.7,
+                      child: const Text(
+                        'يرجى الانتظار...',
+                        style: TextStyle(
+                          color: Colors.white70,
+                          fontSize: 14,
+                          letterSpacing: 0.8,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       );
@@ -342,14 +560,14 @@ class _VirtualTourScreenState extends State<VirtualTourScreen> {
                     sensitivity: 1.4,
                     onViewChanged: _handleViewChanged,
                     child: _activeScene!.imageUrl.isNotEmpty
-                        ? Image.network(
-                            _activeScene!.imageUrl,
+                        ? Image(
+                            image: CachedNetworkImageProvider(
+                              _activeScene!.imageUrl,
+                              headers: const {
+                                'Cache-Control': 'no-cache',
+                              },
+                            ),
                             fit: BoxFit.cover,
-                            cacheWidth: null, // Allow full resolution
-                            cacheHeight: null,
-                            headers: const {
-                              'Cache-Control': 'no-cache',
-                            },
                             errorBuilder: (context, error, stackTrace) {
                               debugPrint('Error loading image: $error');
                               debugPrint('Image URL: ${_activeScene!.imageUrl}');
@@ -368,10 +586,9 @@ class _VirtualTourScreenState extends State<VirtualTourScreen> {
                             },
                             loadingBuilder: (context, child, loadingProgress) {
                               if (loadingProgress == null) {
-                                // Image loaded successfully, return the child
                                 return child;
                               }
-                              // Show loading indicator overlay instead of placeholder
+                              // Show loading indicator overlay
                               return Stack(
                                 fit: StackFit.expand,
                                 children: [
@@ -442,10 +659,18 @@ class _VirtualTourScreenState extends State<VirtualTourScreen> {
                   duration: const Duration(milliseconds: 150),
                   child: DecoratedBox(
                     decoration: const BoxDecoration(color: Colors.black),
-                    child: Image.network(
-                      _previewImageUrl!,
+                    child: CachedNetworkImage(
+                      imageUrl: _previewImageUrl!,
                       fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
+                      placeholder: (context, url) => Container(
+                        color: Colors.black,
+                        child: const Center(
+                          child: CircularProgressIndicator(
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        ),
+                      ),
+                      errorWidget: (context, url, error) {
                         debugPrint('Error loading preview image: $error');
                         return Container(
                           color: Colors.black,

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../../core/theme/app_colors.dart';
 import '../../models/news_model.dart';
 import 'animated_card.dart';
@@ -114,12 +115,24 @@ class QuickNewsSection extends StatelessWidget {
             child: newsItem.imageUrl != null && newsItem.imageUrl!.isNotEmpty
                 ? ClipRRect(
                     borderRadius: BorderRadius.circular(12.r),
-                    child: Image.network(
-                      newsItem.imageUrl!,
+                    child: CachedNetworkImage(
+                      imageUrl: newsItem.imageUrl!,
                       fit: BoxFit.cover,
-                      cacheWidth: 200,
-                      cacheHeight: 200,
-                      errorBuilder: (context, error, stackTrace) {
+                      memCacheWidth: 200,
+                      memCacheHeight: 200,
+                      placeholder: (context, url) => Container(
+                        decoration: BoxDecoration(
+                          color: newsItem.categoryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            color: newsItem.categoryColor,
+                          ),
+                        ),
+                      ),
+                      errorWidget: (context, url, error) {
                         return Container(
                           decoration: BoxDecoration(
                             color: newsItem.categoryColor.withOpacity(0.1),
@@ -129,25 +142,6 @@ class QuickNewsSection extends StatelessWidget {
                             _getNewsIcon(newsItem.category),
                             color: newsItem.categoryColor,
                             size: 24.sp,
-                          ),
-                        );
-                      },
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return Container(
-                          decoration: BoxDecoration(
-                            color: newsItem.categoryColor.withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(12.r),
-                          ),
-                          child: Center(
-                            child: SizedBox(
-                              width: 16.w,
-                              height: 16.w,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: newsItem.categoryColor,
-                              ),
-                            ),
                           ),
                         );
                       },
