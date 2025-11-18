@@ -144,6 +144,7 @@ class CollegeController extends BaseController {
 
   List<Department> getDepartmentsByCollegeId(String collegeId) {
     final college = getCollegeById(collegeId);
+
     return college?.departments ?? [];
   }
 }

@@ -41,40 +41,14 @@ class NewsDetailView extends StatelessWidget {
             backgroundColor: news.categoryColor,
             flexibleSpace: FlexibleSpaceBar(
               title: Text(
-                news.category.displayName,
+                _categoryDisplayName(news.category),
                 style: TextStyle(
                   fontSize: 14.sp,
                   fontWeight: FontWeight.bold,
                   color: AppColors.textOnPrimary,
                 ),
               ),
-              background: Container(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      news.categoryColor,
-                      news.categoryColor.withOpacity(0.8),
-                    ],
-                  ),
-                ),
-                child: Center(
-                  child: Container(
-                    width: 80.w,
-                    height: 80.w,
-                    decoration: BoxDecoration(
-                      color: AppColors.textOnPrimary.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(20.r),
-                    ),
-                    child: Icon(
-                      Icons.newspaper_rounded,
-                      color: AppColors.textOnPrimary,
-                      size: 40.sp,
-                    ),
-                  ),
-                ),
-              ),
+              background: _buildAppBarBackground(news),
             ),
           ),
           
@@ -110,7 +84,7 @@ class NewsDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildHeader(news) {
+  Widget _buildHeader(NewsItem news) {
     return AnimatedCard(
       delay: 0,
       margin: EdgeInsets.all(20.w),
@@ -140,8 +114,8 @@ class NewsDetailView extends StatelessWidget {
               ),
               SizedBox(width: 16.w),
               _buildMetaItem(
-                icon: Icons.account_balance,
-                label: news.department,
+                icon: Icons.category_rounded,
+                label: _categoryDisplayName(news.category),
                 color: news.categoryColor,
               ),
             ],
@@ -166,6 +140,62 @@ class NewsDetailView extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildAppBarBackground(NewsItem news) {
+    final hasImage = news.imageUrl != null && news.imageUrl!.isNotEmpty;
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        if (hasImage)
+          Image.network(
+            news.imageUrl!,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(color: news.categoryColor);
+            },
+            loadingBuilder: (context, child, loadingProgress) {
+              if (loadingProgress == null) return child;
+              return Container(
+                color: news.categoryColor.withOpacity(0.4),
+                child: const Center(
+                  child: CircularProgressIndicator(),
+                ),
+              );
+            },
+          )
+        else
+          Container(color: news.categoryColor),
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [
+                Colors.transparent,
+                Colors.black.withOpacity(0.5),
+              ],
+            ),
+          ),
+        ),
+        if (!hasImage)
+          Center(
+            child: Container(
+              width: 80.w,
+              height: 80.w,
+              decoration: BoxDecoration(
+                color: AppColors.textOnPrimary.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(20.r),
+              ),
+              child: Icon(
+                Icons.newspaper_rounded,
+                color: AppColors.textOnPrimary,
+                size: 40.sp,
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -198,7 +228,7 @@ class NewsDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildContent(news) {
+  Widget _buildContent(NewsItem news) {
     return AnimatedCard(
       delay: 100,
       margin: EdgeInsets.symmetric(horizontal: 20.w),
@@ -237,7 +267,7 @@ class NewsDetailView extends StatelessWidget {
     );
   }
 
-  Widget _buildTags(news) {
+  Widget _buildTags(NewsItem news) {
     return AnimatedCard(
       delay: 200,
       margin: EdgeInsets.all(20.w),
@@ -303,6 +333,23 @@ class NewsDetailView extends StatelessWidget {
       return 'منذ ${difference.inDays} أيام';
     } else {
       return '${date.day}/${date.month}/${date.year}';
+    }
+  }
+
+  String _categoryDisplayName(NewsCategory category) {
+    switch (category) {
+      case NewsCategory.general:
+        return 'عام';
+      case NewsCategory.academic:
+        return 'أكاديمي';
+      case NewsCategory.research:
+        return 'بحثي';
+      case NewsCategory.events:
+        return 'فعاليات';
+      case NewsCategory.sports:
+        return 'رياضي';
+      case NewsCategory.student:
+        return 'طلابي';
     }
   }
 }

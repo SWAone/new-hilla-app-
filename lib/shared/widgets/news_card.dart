@@ -47,6 +47,8 @@ class NewsCard extends StatelessWidget {
   }
 
   Widget _buildImageSection() {
+    final hasImage = news.imageUrl != null && news.imageUrl!.isNotEmpty;
+    
     return Container(
       height: 180.h,
       width: double.infinity,
@@ -55,7 +57,7 @@ class NewsCard extends StatelessWidget {
           topLeft: Radius.circular(16.r),
           topRight: Radius.circular(16.r),
         ),
-        gradient: LinearGradient(
+        gradient: hasImage ? null : LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
@@ -66,25 +68,100 @@ class NewsCard extends StatelessWidget {
       ),
       child: Stack(
         children: [
-          // Background Pattern
-          Positioned.fill(
-            child: Container(
-              decoration: BoxDecoration(
+          // عرض الصورة إذا كانت موجودة
+          if (hasImage)
+            Positioned.fill(
+              child: ClipRRect(
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(16.r),
                   topRight: Radius.circular(16.r),
                 ),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    news.categoryColor.withOpacity(0.3),
-                    news.categoryColor.withOpacity(0.1),
-                  ],
+                child: Image.network(
+                  news.imageUrl!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    // في حالة فشل تحميل الصورة، عرض gradient
+                    return Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            news.categoryColor.withOpacity(0.8),
+                            news.categoryColor.withOpacity(0.6),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            news.categoryColor.withOpacity(0.8),
+                            news.categoryColor.withOpacity(0.6),
+                          ],
+                        ),
+                      ),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes!
+                              : null,
+                          color: AppColors.textOnPrimary,
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
-          ),
+          
+          // Background Pattern (إذا لم تكن هناك صورة)
+          if (!hasImage)
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(16.r),
+                    topRight: Radius.circular(16.r),
+                  ),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      news.categoryColor.withOpacity(0.3),
+                      news.categoryColor.withOpacity(0.1),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          
+          // Overlay للصورة لتحسين قراءة النص
+          if (hasImage)
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(16.r),
+                    topRight: Radius.circular(16.r),
+                  ),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.3),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           
           // Category Badge
           Positioned(
@@ -263,29 +340,30 @@ class NewsCard extends StatelessWidget {
               
               SizedBox(width: 8.w),
               
-              // Department
+              // Category
               Expanded(
                 child: Container(
                   padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
-                    color: AppColors.textHint.withOpacity(0.1),
+                    color: news.categoryColor.withOpacity(0.08),
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        Icons.account_balance,
+                        Icons.category_rounded,
                         size: 12.sp,
-                        color: AppColors.textSecondary,
+                        color: news.categoryColor,
                       ),
                       SizedBox(width: 4.w),
                       Expanded(
                         child: Text(
-                          news.department,
+                          news.category.displayName,
                           style: TextStyle(
                             fontSize: 10.sp,
-                            color: AppColors.textSecondary,
+                            color: news.categoryColor,
+                            fontWeight: FontWeight.w600,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -348,6 +426,8 @@ class NewsCard extends StatelessWidget {
     }
   }
 }
+
+
 
 
 

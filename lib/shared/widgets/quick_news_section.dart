@@ -7,11 +7,13 @@ import 'animated_card.dart';
 class QuickNewsSection extends StatelessWidget {
   final List<NewsItem> news;
   final VoidCallback? onSeeAll;
+  final ValueChanged<NewsItem>? onNewsTap;
 
   const QuickNewsSection({
     Key? key,
     required this.news,
     this.onSeeAll,
+    this.onNewsTap,
   }) : super(key: key);
 
   @override
@@ -72,6 +74,7 @@ class QuickNewsSection extends StatelessWidget {
               return AnimatedCard(
                 delay: index * 100,
                 margin: EdgeInsets.only(bottom: 12.h),
+                onTap: () => onNewsTap?.call(newsItem),
                 child: _buildNewsItem(newsItem),
               );
             },
@@ -108,14 +111,12 @@ class QuickNewsSection extends StatelessWidget {
                 ),
               ],
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12.r),
-              child: Image.network(
-                      'https://lh3.googleusercontent.com/gps-cs-s/AC9h4noP8o5kEv7Si3cK9tS8CrPu4Rx543RtwKYiIpwXLzDPpfzRtbeT0_34VEYexXX2mnPzPedfs-C8PBJ1XPIsziy7nGhB8zk8Gx_p6BvmpHVm-pkjRvhz1jn1k7WgWZT0dtGbL7R5hA=s1360-w1360-h1020-rw',
+            child: newsItem.imageUrl != null && newsItem.imageUrl!.isNotEmpty
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(12.r),
+                    child: Image.network(
+                      newsItem.imageUrl!,
                       fit: BoxFit.cover,
-                      headers: const {
-                        'User-Agent': 'Mozilla/5.0 (compatible; Flutter App)',
-                      },
                       cacheWidth: 200,
                       cacheHeight: 200,
                       errorBuilder: (context, error, stackTrace) {
@@ -150,9 +151,19 @@ class QuickNewsSection extends StatelessWidget {
                           ),
                         );
                       },
-                    )
-                 
-            ),
+                    ),
+                  )
+                : Container(
+                    decoration: BoxDecoration(
+                      color: newsItem.categoryColor.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    child: Icon(
+                      _getNewsIcon(newsItem.category),
+                      color: newsItem.categoryColor,
+                      size: 24.sp,
+                    ),
+                  ),
           ),
           
           SizedBox(width: 12.w),
@@ -275,6 +286,8 @@ class QuickNewsSection extends StatelessWidget {
     }
   }
 }
+
+
 
 
 

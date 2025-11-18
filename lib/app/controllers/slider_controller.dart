@@ -47,7 +47,7 @@ class SliderController extends BaseController {
       icon: IconHelper.getIconData(apiSlider.icon),
       primaryColor: _parseColor(apiSlider.primaryColor),
       secondaryColor: _parseColor(apiSlider.secondaryColor),
-      buttonText: apiSlider.buttonText ?? 'اقرأ المزيد',
+      buttonText: apiSlider.buttonText ?? '',
       imageUrl: apiSlider.imageUrl,
       onTap: apiSlider.buttonLink != null && apiSlider.buttonLink!.isNotEmpty
           ? () {

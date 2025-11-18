@@ -37,13 +37,10 @@ class CollegeImageWidget extends StatelessWidget {
           children: [
             // Background Image or Gradient
             Positioned.fill(
-              child: college.imageUrl.isNotEmpty
+              child: college.imageUrl != null && college.imageUrl!.isNotEmpty
                   ? Image.network(
-                      college.imageUrl,
+                      college.imageUrl!,
                       fit: BoxFit.cover,
-                      headers: const {
-                        'User-Agent': 'Mozilla/5.0 (compatible; Flutter App)',
-                      },
                       cacheWidth: 400,
                       cacheHeight: 400,
                       errorBuilder: (context, error, stackTrace) {

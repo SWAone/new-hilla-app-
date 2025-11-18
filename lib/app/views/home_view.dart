@@ -11,6 +11,7 @@ import '../../shared/widgets/hero_slider.dart';
 import '../../shared/widgets/stats_section.dart';
 import '../../shared/widgets/quick_news_section.dart';
 import '../../shared/widgets/quick_events_section.dart';
+import 'news_detail_view.dart';
 import '../../360_views/screens/virtual_tour_screen.dart';
 import 'college_detail_view.dart';
 
@@ -43,41 +44,55 @@ class HomeView extends StatelessWidget {
             return _buildErrorState(collegeController);
           }
           
-          return SingleChildScrollView(
-            child: Column(
-              children: [
-                // Hero Slider
-                _buildHeroSlider(sliderController),
-                
-                SizedBox(height: 20.h),
-                
-                // Virtual Tour Button
-                _buildVirtualTourButton(),
-                
-                SizedBox(height: 24.h),
-                
-                // Stats Section
-                _buildStatsSection(),
-                
-                SizedBox(height: 24.h),
-                
-                // Quick News Section
-                _buildQuickNewsSection(newsController),
-                
-                SizedBox(height: 24.h),
-                
-                // Quick Events Section
-                _buildQuickEventsSection(eventsController),
-                
-                SizedBox(height: 24.h),
-                
-                // Colleges Section
-                _buildCollegesSection(collegeController),
-                
-                SizedBox(height: 20.h),
+          return RefreshIndicator(
+            onRefresh: () async {
+              // تحديث جميع البيانات عند سحب الشاشة
+              await Future.wait([
+                newsController.loadNews(),
+                eventsController.loadEvents(),
+                collegeController.loadColleges(),
+                sliderController.loadSliders(),
+              ]);
+            },
+            color: AppColors.primary,
+            backgroundColor: AppColors.surface,
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              child: Column(
+                children: [
+                  // Hero Slider
+                  _buildHeroSlider(sliderController),
+                  
+                  SizedBox(height: 20.h),
+                  
+                  // Virtual Tour Button
+                  _buildVirtualTourButton(),
+                  
+                  SizedBox(height: 24.h),
+                  
+                  // Stats Section
+                  _buildStatsSection(),
+                  
+                  SizedBox(height: 24.h),
+                  
+                  // Quick News Section
+                  _buildQuickNewsSection(newsController),
+                  
+                  SizedBox(height: 24.h),
+                  
+                  // Quick Events Section
+                  _buildQuickEventsSection(eventsController),
+                  
+                  SizedBox(height: 24.h),
+                  
+                  // Colleges Section
+                  _buildCollegesSection(collegeController),
+                  
+                  SizedBox(height: 20.h),
 
-                
-              ],
+                  
+                ],
+              ),
             ),
           );
         }),
@@ -259,6 +274,11 @@ class HomeView extends StatelessWidget {
     return QuickNewsSection(
       news: latestNews,
       onSeeAll: onNavigateToNews,
+      onNewsTap: (news) => Get.to(
+        () => NewsDetailView(newsId: news.id),
+        transition: Transition.rightToLeft,
+        duration: const Duration(milliseconds: 300),
+      ),
     );
   }
 

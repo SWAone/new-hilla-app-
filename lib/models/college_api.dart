@@ -1,3 +1,5 @@
+import '../shared/env.dart';
+
 class CollegeApi {
   const CollegeApi({
     required this.id,
@@ -24,12 +26,30 @@ class CollegeApi {
   final AdmissionGuideApi admissionGuide;
 
   static CollegeApi fromJson(Map<String, dynamic> json) {
+    // بناء الرابط الكامل من imageUrl النسبي
+    String? imageUrl;
+    if (json['imageFullUrl'] != null) {
+      imageUrl = json['imageFullUrl'].toString();
+      // إذا كان imageFullUrl يحتوي على localhost، نستبدله بـ Env.baseUrl
+      if (imageUrl.contains('localhost') || imageUrl.contains('127.0.0.1')) {
+        final relativePath = imageUrl.split('/uploads/').last;
+        imageUrl = '${Env.baseUrl}/uploads/$relativePath';
+      }
+    } else if (json['imageUrl'] != null) {
+      final relativePath = json['imageUrl'].toString();
+      if (relativePath.isNotEmpty && !relativePath.startsWith('http')) {
+        imageUrl = '${Env.baseUrl}/uploads/$relativePath';
+      } else {
+        imageUrl = relativePath;
+      }
+    }
+    
     return CollegeApi(
       id: (json['_id'] ?? json['id']).toString(),
       name: (json['name'] ?? '').toString(),
       description: (json['description'] ?? '').toString(),
       iconPath: (json['iconPath'] ?? 'school').toString(),
-      imageUrl: json['imageUrl']?.toString(),
+      imageUrl: imageUrl,
       primaryColor: (json['primaryColor'] ?? '#1976D2').toString(),
       secondaryColor: (json['secondaryColor'] ?? '#42A5F5').toString(),
       departments: json['departments'] is List

@@ -20,7 +20,6 @@ class CollegeDetailView extends StatelessWidget {
   Widget build(BuildContext context) {
     final CollegeController controller = Get.find<CollegeController>();
     final College? college = controller.getCollegeById(collegeId);
-
     if (college == null) {
       return Scaffold(
         appBar: AppBar(

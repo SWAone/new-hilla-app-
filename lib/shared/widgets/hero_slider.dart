@@ -60,6 +60,8 @@ class _HeroSliderState extends State<HeroSlider> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      margin: EdgeInsets.only(top: 10.h),
+      width: double.infinity,
       height: 250.h,
       child: Stack(
         children: [
@@ -127,30 +129,73 @@ class _HeroSliderState extends State<HeroSlider> {
             // Background Image or Gradient
             Positioned.fill(
               child: item.imageUrl != null && item.imageUrl!.isNotEmpty
-                  ? Image.network(
-                      item.imageUrl!,
-                      fit: BoxFit.cover,
-                      headers: const {
-                        'User-Agent': 'Mozilla/5.0 (compatible; Flutter App)',
-                      },
-                      cacheWidth: 800,
-                      cacheHeight: 600,
-                      errorBuilder: (context, error, stackTrace) {
-                        return Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                item.primaryColor,
-                                item.secondaryColor,
-                              ],
-                            ),
-                          ),
-                        );
-                      },
+                  ? Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      decoration: BoxDecoration(
+                        color: item.primaryColor, // لون خلفية في حالة وجود حواف
+                      ),
+                      child: Transform.scale(
+                        scale: 1.1, // تكبير الصورة بنسبة 10% لضمان تغطية الحاوية بالكامل
+                        child: Image.network(
+                          item.imageUrl!,
+                          width: double.infinity,
+                          height: double.infinity,
+                          fit: BoxFit.cover,
+                          alignment: Alignment.center,
+                          repeat: ImageRepeat.noRepeat,
+                          headers: const {
+                            'User-Agent': 'Mozilla/5.0 (compatible; Flutter App)',
+                          },
+                          cacheHeight: 600,
+                          errorBuilder: (context, error, stackTrace) {
+                            return Container(
+                              width: double.infinity,
+                              height: double.infinity,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    item.primaryColor,
+                                    item.secondaryColor,
+                                  ],
+                                ),
+                              ),
+                            );
+                          },
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return Container(
+                              width: double.infinity,
+                              height: double.infinity,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    item.primaryColor,
+                                    item.secondaryColor,
+                                  ],
+                                ),
+                              ),
+                              child: Center(
+                                child: CircularProgressIndicator(
+                                  value: loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                          loadingProgress.expectedTotalBytes!
+                                      : null,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
                     )
                   : Container(
+                      width: double.infinity,
+                      height: double.infinity,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           begin: Alignment.topLeft,
@@ -311,6 +356,8 @@ class SliderItem {
     this.onTap,
   });
 }
+
+
 
 
 

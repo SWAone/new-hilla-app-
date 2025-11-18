@@ -8,6 +8,7 @@ class PanoramaControls extends StatelessWidget {
   final double currentZoom;
   final VoidCallback? onZoomIn;
   final VoidCallback? onZoomOut;
+  final VoidCallback? onExit;
 
   const PanoramaControls({
     super.key,
@@ -17,6 +18,7 @@ class PanoramaControls extends StatelessWidget {
     required this.currentZoom,
     this.onZoomIn,
     this.onZoomOut,
+    this.onExit,
   });
 
   @override
@@ -26,6 +28,19 @@ class PanoramaControls extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Stack(
           children: [
+            // Exit button
+            Align(
+              alignment: Alignment.topRight,
+              child: IconButton.filled(
+                onPressed: onExit,
+                icon: const Icon(Icons.close),
+                color: Colors.white,
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.black54,
+                ),
+                tooltip: 'إغلاق',
+              ),
+            ),
             // Back button
             Align(
               alignment: Alignment.topLeft,

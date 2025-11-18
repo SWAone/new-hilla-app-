@@ -15,16 +15,20 @@ class SceneManager {
   Future<void> precacheAllScenes() async {
     for (final scene in scenes.values) {
       if (!context.mounted) return;
-      await precacheImage(AssetImage(scene.assetPath), context)
-          .catchError((_) {});
+      if (scene.imageUrl.isNotEmpty) {
+        await precacheImage(NetworkImage(scene.imageUrl), context)
+            .catchError((_) {});
+      }
     }
   }
 
   /// Preloads a specific scene image.
   Future<void> precacheScene(TourScene scene) async {
     if (!context.mounted) return;
-    await precacheImage(AssetImage(scene.assetPath), context)
-        .catchError((_) {});
+    if (scene.imageUrl.isNotEmpty) {
+      await precacheImage(NetworkImage(scene.imageUrl), context)
+          .catchError((_) {});
+    }
   }
 
   /// Gets a scene by its ID.

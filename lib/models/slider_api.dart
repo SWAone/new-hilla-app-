@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../shared/env.dart';
+
 class SliderApi {
   const SliderApi({
     required this.id,
@@ -33,13 +35,61 @@ class SliderApi {
       icon: (json['icon'] ?? 'school').toString(),
       primaryColor: (json['primaryColor'] ?? '#1976D2').toString(),
       secondaryColor: (json['secondaryColor'] ?? '#42A5F5').toString(),
-      imageUrl: json['imageUrl']?.toString(),
+      imageUrl: _resolveImageUrl(json),
       buttonText: json['buttonText']?.toString(),
       buttonLink: json['buttonLink']?.toString(),
       order: json['order'] is int
           ? json['order'] as int
           : int.tryParse('${json['order'] ?? 0}'),
     );
+  }
+
+  static String? _resolveImageUrl(Map<String, dynamic> json) {
+    final fullUrl = json['imageFullUrl']?.toString();
+    final normalizedFull = _normalizeAbsoluteUrl(fullUrl);
+    if (normalizedFull != null) {
+      return normalizedFull;
+    }
+
+    final relativePath = json['imageUrl']?.toString();
+    if (relativePath != null && relativePath.isNotEmpty) {
+      return _buildUploadsUrl(relativePath);
+    }
+
+    final fallback = json['image']?.toString();
+    if (fallback == null || fallback.isEmpty) return null;
+
+    if (fallback.startsWith('http')) {
+      return _normalizeAbsoluteUrl(fallback) ?? fallback;
+    }
+
+    return _buildUploadsUrl(fallback);
+  }
+
+  static String? _normalizeAbsoluteUrl(String? url) {
+    if (url == null || url.isEmpty) return null;
+    final uri = Uri.tryParse(url);
+    if (uri == null) return url;
+
+    if (uri.host == 'localhost' ||
+        uri.host == '127.0.0.1' ||
+        uri.host == '::1') {
+      final base = Uri.parse(Env.baseUrl);
+      final normalized = Uri(
+        scheme: base.scheme,
+        host: base.host,
+        port: base.hasPort ? base.port : null,
+        path: uri.path,
+      );
+      return normalized.toString();
+    }
+
+    return url;
+  }
+
+  static String _buildUploadsUrl(String path) {
+    final normalizedPath = path.startsWith('/') ? path.substring(1) : path;
+    return '${Env.baseUrl}/uploads/$normalizedPath';
   }
 }
 

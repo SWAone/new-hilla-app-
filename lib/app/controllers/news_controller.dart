@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:get/get.dart';
 import '../../core/controllers/base_controller.dart';
 import '../../models/news_model.dart';
@@ -15,26 +17,73 @@ class NewsController extends BaseController {
 
   final NewsRepository _repo = NewsRepository();
 
+  final int _limit = 10;
+  int _nextPage = 1;
+  bool _hasMore = true;
+  bool _isLoadingMore = false;
+  String _currentSearchTerm = '';
+  Timer? _searchDebounce;
+
   @override
   void onInit() {
     super.onInit();
     loadNews();
   }
 
-  Future<void> loadNews() async {
-    try {
+  @override
+  void onClose() {
+    _searchDebounce?.cancel();
+    super.onClose();
+  }
+
+  Future<void> loadNews({bool reset = true}) async {
+    if (reset) {
+      _nextPage = 1;
+      _hasMore = true;
+    } else {
+      if (_isLoadingMore || !_hasMore) return;
+    }
+
+    if (reset) {
       setLoading(true);
+    } else {
+      _isLoadingMore = true;
+    }
+
+    try {
       clearError();
-      final result = await _repo.fetchNews(page: 1, limit: 10);
-      final items = result.items.map(_convertToNewsItem).toList();
-      news.value = items;
-      filteredNews.value = items;
+      // لا نرسل isPublished لأن السيرفر يقوم بتطبيقه تلقائيًا للمستخدمين العاديين
+      final result = await _repo.fetchNews(
+        page: _nextPage,
+        limit: _limit,
+        search: _currentSearchTerm.isNotEmpty ? _currentSearchTerm : null,
+        category: selectedCategory.value?.name,
+        isPublished: null, // السيرفر يقوم بتطبيق isPublished=true تلقائيًا
+      );
       
-    } catch (e) {
+      
+      debugPrint('News loaded: ${result.items.length} items, total: ${result.total}, page: ${result.page}');
+      final items = result.items.map(_convertToNewsItem).toList();
+
+      if (reset) {
+        news.value = items;
+      } else {
+        news.addAll(items);
+      }
+      filteredNews.value = news;
+
+      _hasMore = result.hasNextPage;
+      _nextPage = _hasMore ? result.page + 1 : result.page;
+    } catch (e, stackTrace) {
+      debugPrint('Error loading news: $e\n$stackTrace');
       setError('فشل في تحميل الأخبار: ${e.toString()}');
       showErrorSnackBar('فشل في تحميل الأخبار');
     } finally {
-      setLoading(false);
+      if (reset) {
+        setLoading(false);
+      } else {
+        _isLoadingMore = false;
+      }
     }
   }
 
@@ -43,13 +92,12 @@ class NewsController extends BaseController {
     return NewsItem(
       id: n.id,
       title: n.title,
-      content: n.summary ?? '',
-      summary: n.summary ?? '',
+      content: n.content ?? n.summary ?? '',
+      summary: n.summary ?? n.content ?? '',
       author: '',
-      department: '',
       publishDate: n.publishDate ?? DateTime.now(),
       tags: const <String>[],
-      imageUrl: n.thumbnailUrl ?? '',
+      imageUrl: n.thumbnailUrl,
       categoryColor: _categoryColor(category),
       category: category,
       views: n.views ?? 0,
@@ -94,34 +142,25 @@ class NewsController extends BaseController {
   void searchNews(String query) {
     searchQuery.value = query;
     isSearching.value = query.isNotEmpty;
-    
-    if (query.isEmpty && selectedCategory.value == null) {
-      filteredNews.value = news;
-    } else {
-      filteredNews.value = news.where((item) {
-        final matchesSearch = query.isEmpty || 
-            item.title.toLowerCase().contains(query.toLowerCase()) ||
-            item.content.toLowerCase().contains(query.toLowerCase()) ||
-            item.tags.any((tag) => tag.toLowerCase().contains(query.toLowerCase()));
-        
-        final matchesCategory = selectedCategory.value == null || 
-            item.category == selectedCategory.value;
-        
-        return matchesSearch && matchesCategory;
-      }).toList();
-    }
+
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 400), () {
+      _currentSearchTerm = query.trim();
+      loadNews();
+    });
   }
 
   void filterByCategory(NewsCategory? category) {
     selectedCategory.value = category;
-    searchNews(searchQuery.value);
+    loadNews();
   }
 
   void clearSearch() {
     searchQuery.value = '';
     isSearching.value = false;
     selectedCategory.value = null;
-    filteredNews.value = news;
+    _currentSearchTerm = '';
+    loadNews();
   }
 
   NewsItem? getNewsById(String id) {

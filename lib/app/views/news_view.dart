@@ -42,34 +42,73 @@ class _NewsViewState extends State<NewsView> {
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            _buildHeader(),
-            
-            // Search and Filter
-            _buildSearchAndFilter(controller),
-            
-            // Content
-            Expanded(
-              child: Obx(() {
-                if (controller.isLoading.value) {
-                  return _buildLoadingState();
-                }
-                
-                if (controller.hasError.value) {
-                  return _buildErrorState(controller);
-                }
-                
-                if (controller.filteredNews.isEmpty) {
-                  return _buildEmptyState();
-                }
-                
-                return _buildNewsList(controller);
-              }),
+        child: Obx(() {
+          if (controller.isLoading.value && controller.news.isEmpty) {
+            return _buildLoadingState();
+          }
+          
+          if (controller.hasError.value && controller.news.isEmpty) {
+            return _buildErrorState(controller);
+          }
+          
+          return RefreshIndicator(
+            onRefresh: () async {
+              await controller.loadNews();
+            },
+            color: AppColors.primary,
+            backgroundColor: AppColors.surface,
+            child: NotificationListener<ScrollNotification>(
+              onNotification: (notification) {
+                return false;
+              },
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  // Header
+                  SliverToBoxAdapter(
+                    child: _buildHeader(),
+                  ),
+                  
+                  // Search and Filter
+                  SliverToBoxAdapter(
+                    child: _buildSearchAndFilter(controller),
+                  ),
+                  
+                  // Content
+                  if (controller.filteredNews.isEmpty)
+                    SliverFillRemaining(
+                      child: _buildEmptyState(),
+                    )
+                  else
+                    SliverPadding(
+                      padding: EdgeInsets.all(20.w),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) {
+                            final news = controller.filteredNews[index];
+                            return Padding(
+                              padding: EdgeInsets.only(bottom: 16.h),
+                              child: NewsCard(
+                                key: ValueKey('${news.id}_${controller.selectedCategory.value?.toString() ?? 'all'}'),
+                                news: news,
+                                animationDelay: index * 80,
+                                onTap: () => Get.to(
+                                  () => NewsDetailView(newsId: news.id),
+                                  transition: Transition.rightToLeft,
+                                  duration: const Duration(milliseconds: 300),
+                                ),
+                              ),
+                            );
+                          },
+                          childCount: controller.filteredNews.length,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ],
-        ),
+          );
+        }),
       ),
     );
   }
@@ -562,48 +601,5 @@ class _NewsViewState extends State<NewsView> {
     );
   }
 
-  Widget _buildNewsList(NewsController controller) {
-    return Obx(() {
-      final selectedCategory = controller.selectedCategory.value;
-      final categoryKey = selectedCategory?.toString() ?? 'all';
-      
-      return AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        transitionBuilder: (Widget child, Animation<double> animation) {
-          return FadeTransition(
-            opacity: animation,
-            child: SlideTransition(
-              position: Tween<Offset>(
-                begin: const Offset(0.0, 0.05),
-                end: Offset.zero,
-              ).animate(CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOutCubic,
-              )),
-              child: child,
-            ),
-          );
-        },
-        child: ListView.builder(
-          key: ValueKey(categoryKey),
-          padding: EdgeInsets.all(20.w),
-          itemCount: controller.filteredNews.length,
-          itemBuilder: (context, index) {
-            final news = controller.filteredNews[index];
-            return NewsCard(
-              key: ValueKey('${news.id}_$categoryKey'),
-              news: news,
-              animationDelay: index * 80,
-              onTap: () => Get.to(
-                () => NewsDetailView(newsId: news.id),
-                transition: Transition.rightToLeft,
-                duration: const Duration(milliseconds: 300),
-              ),
-            );
-          },
-        ),
-      );
-    });
-  }
 
 }

@@ -6,10 +6,9 @@ class NewsItem {
   final String content;
   final String summary;
   final String author;
-  final String department;
   final DateTime publishDate;
   final List<String> tags;
-  final String imageUrl;
+  final String? imageUrl;
   final Color categoryColor;
   final NewsCategory category;
   final int views;
@@ -20,10 +19,9 @@ class NewsItem {
     required this.content,
     required this.summary,
     required this.author,
-    required this.department,
     required this.publishDate,
     required this.tags,
-    required this.imageUrl,
+    this.imageUrl,
     required this.categoryColor,
     required this.category,
     this.views = 0,
@@ -54,6 +52,23 @@ extension NewsCategoryExtension on NewsCategory {
         return 'رياضي';
       case NewsCategory.student:
         return 'طلابي';
+    }
+  }
+
+  String get name {
+    switch (this) {
+      case NewsCategory.general:
+        return 'general';
+      case NewsCategory.academic:
+        return 'academic';
+      case NewsCategory.research:
+        return 'research';
+      case NewsCategory.events:
+        return 'events';
+      case NewsCategory.sports:
+        return 'sports';
+      case NewsCategory.student:
+        return 'student';
     }
   }
 }
